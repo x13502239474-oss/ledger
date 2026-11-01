@@ -124,6 +124,24 @@
   .filters .month { color: var(--text-2); }
   .filters .kw { flex: 1; min-width: 120px; }
 
+  .month-nav {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 34px; padding: 0 4px; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--surface);
+  }
+  .month-nav button {
+    width: 26px; height: 26px; border-radius: 6px;
+    display: grid; place-items: center;
+    font-size: 18px; line-height: 1; color: var(--text-2);
+    transition: background .12s;
+  }
+  .month-nav button:hover { background: var(--surface-2); color: var(--text); }
+  .month-nav .month-label {
+    min-width: 86px; text-align: center;
+    font-size: 13px; font-weight: 600; color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
   /* 流水列表 */
   .tx-list { max-height: 560px; overflow-y: auto; }
   .tx-group { padding: 6px 0; }
@@ -466,6 +484,18 @@ function currentMonth() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 }
 
+function monthLabel(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  return `${y}年${m}月`;
+}
+
+function shiftMonth(delta) {
+  const [y, m] = filterMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  filterMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  render();
+}
+
 /* ============ 工具 ============ */
 function fmt(n) {
   return '¥' + (Number(n)||0).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -540,7 +570,11 @@ function renderDaily() {
   let html = `<div class="panel">
     <div class="panel-head"><h2>收支明细</h2><span class="count">共 ${list.length} 笔</span></div>
     <div class="filters">
-      <input type="month" class="month" value="${filterMonth}" onchange="filterMonth=this.value;render();">
+      <div class="month-nav">
+        <button onclick="shiftMonth(-1)" title="上个月">‹</button>
+        <span class="month-label">${monthLabel(filterMonth)}</span>
+        <button onclick="shiftMonth(1)" title="下个月">›</button>
+      </div>
       <select onchange="filterCat=this.value;render();">
         <option value="all" ${filterCat==='all'?'selected':''}>全部分类</option>
         ${allCats.map(c=>`<option value="${c.name}" ${filterCat===c.name?'selected':''}>${c.emoji} ${c.name}</option>`).join('')}
